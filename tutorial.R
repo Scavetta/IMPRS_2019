@@ -67,7 +67,7 @@ ggplot(PlantGrowth, aes(x = group, y = weight)) +
 # Plot the individual points AND mean and sd:
 ggplot(PlantGrowth, aes(group, weight)) +
   geom_jitter(width = 0.1, alpha = 0.6) +
-  geom_pointrange(stat = aes(y = avg, 
+  geom_pointrange(aes(y = avg, 
                       ymin = avg - stdev, 
                       ymax = avg + stdev), 
                   PG_summary,
