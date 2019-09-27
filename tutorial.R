@@ -455,3 +455,111 @@ foo_df %>%
 
 foo_df %>% 
   arrange(desc(tissue))
+
+# Element 6: Factor variables (with "levels")
+# categorical variable (aka qualitative, discrete)
+# with "groups"
+
+# e.g.
+PlantGrowth$group
+
+typeof(PlantGrowth$group)
+class(PlantGrowth$group)
+# factor is a special class of type integer
+
+# you can see this more clearly with:
+str(PlantGrowth)
+
+# Caution!
+# R likes to switch characters to factors in a data frame:
+foo3
+foo_df$tissue
+str(foo_df)
+
+# problem with contamination
+xx <- c(23:29, "bob")
+xx # character
+
+test <- data.frame(xx)
+test$xx # factor
+
+# to do math, coerce to a numeric:
+as.numeric(test$xx) # this just gives the integers
+
+# first get characters:
+as.numeric(as.character(test$xx))
+
+# Element 7: Tidy data
+# make some play data
+source("PlayData.R")
+
+# Let's see the scenarios we discussed in class:
+# Scenario 1: Transformation height & width
+# Just stick with messy data:
+PlayData$height/PlayData$width
+
+# For the other scenarios we need tidy data
+# To get tidy data, use gather() from tidyr
+# 4 arguments:
+# 1 - data
+# 2,3 - key,value pair - names for OUTPUT
+# 4 - the ID or MEASURE variables
+
+# using ID variables (exclude with -)
+gather(PlayData, key, value, -c(type, time))
+foo_df[, -3] # exclude the 3rd column
+
+# using MEASURE variables (default)
+PlayData_t <- gather(PlayData, key, value, c(height, width))
+
+# Scenario 2: Trans time1 & time2
+# one solution: "spread" the data
+# Use mutate to apply a transformation function
+PlayData_t %>% 
+  spread(time, value) %>% 
+  mutate(timediff = `2` - `1`)
+
+# How about if I wanted to standardize all values
+# for each type and key by dividing time 1
+PlayData_t %>% 
+  group_by(type, key) %>% 
+  mutate(stand = value/value[time == 1])
+
+# Scenario 3: Trans typeA & typeB
+PlayData_t %>% 
+  spread(type, value) %>% 
+  mutate(typediff = A/B)
+
+# Element 8: Split-Apply-Combine with dplyr
+# The pipe operator %>%,
+# The five verbs of dplyr:
+# filter(),
+# arrange(),
+# select(),
+# mutate(),
+# summarise(), and
+# group_by()
+
+# Scenario 1: Aggregration across height & width
+# i.e. "group" according to type and time
+PlayData_t %>% 
+  group_by(type, time) %>% 
+  summarise(avg = mean(value))
+
+# Scenario 2: Aggregration across time1 & time2
+# i.e. "group" according to type and key
+PlayData_t %>% 
+  group_by(type, key) %>% 
+  summarise(avg = mean(value))
+
+# Scenario 3: Aggregration across typeA & typeB
+# i.e. "group" according to time and key
+PlayData_t %>% 
+  group_by(time, key) %>% 
+  summarise(avg = mean(value))
+
+# can I keep the raw data *and* the aggregration value?
+PlayData_t %>% 
+  group_by(time, key) %>% 
+  mutate(avg = mean(value))
+
